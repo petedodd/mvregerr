@@ -1,3 +1,18 @@
+##' This is the main function of the package. TODO
+##'
+##' Details TODO
+##' @title Get Gibbs samples
+##' @param Z \eqn{n\times k} matrix of observations
+##' @param Z.errV \eqn{n\times k} matrix of observation errors (as variances)
+##' @param X \eqn{n\times p} matrix of covariates (see details)
+##' @param nchain chain length
+##' @param init list of parameters determining prior (see details)
+##' @param every how many iterations to report progress
+##' @param XP covariates to use in making predictions
+##' @param record character vector specifying which quantities to record and return
+##' @return a list of chains (see details)
+##' @author Pete Dodd
+##' @export
 mvregerrGS <- function(Z,
                        Z.errV,
                        X,
@@ -34,7 +49,7 @@ mvregerrGS <- function(Z,
       is2 <- diag(1/Z.errV[r,]) + iSig
       s2 <- solve(is2)                  #TODO consider efficiency: chol for lots
       v <- s2 %*% (diag(1/Z.errV[r,]) %*% (Z[r,]) + iSig %*% t(X[r,] %*% bet))
-      Y[r,] <- mvrnorm(n=1,mu=v,Sigma=s2)
+      Y[r,] <- MCMCpack::mvrnorm(n=1,mu=v,Sigma=s2)
     }
     ## beta update
     iXi <- iSig %x% XtX   + diag(viB)
@@ -55,7 +70,7 @@ mvregerrGS <- function(Z,
     ## update: \Sigma | Y \beta ~ IW(\Psi + (Y-X\beta)^T(Y-X\beta),\nu + n)
     V <- Y - X %*% bet
     V <- t(V) %*% V
-    Sigma <- riwish(nu + n, Psi + V) #
+    Sigma <- MCMCpack::riwish(nu + n, Psi + V) #
     ## predictions
     if(!is.null(XP)){
       ans$YP[[i]] <- t(apply(XP %*% bet,1,function(x) mvrnorm(n=1,mu=x,Sigma=Sig)))

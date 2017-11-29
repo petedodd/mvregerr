@@ -12,8 +12,13 @@ Imports: data.tree,
     scales,
     reshape2,
     MASS,
-    stringr
+    stringr,
+    MCMCpack
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    coda,
+    MASS,
+    ggplot2,
+    data.table
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
