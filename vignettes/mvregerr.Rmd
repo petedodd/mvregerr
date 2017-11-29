@@ -13,6 +13,7 @@ vignette: >
 
 TODO comment clash
 make sure README includes build vignettes false and explain how to generate
+graph sizes
 
 # Preliminaries
 
