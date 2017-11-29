@@ -49,7 +49,7 @@ mvregerrGS <- function(Z,
       is2 <- diag(1/Z.errV[r,]) + iSig
       s2 <- solve(is2)                  #TODO consider efficiency: chol for lots
       v <- s2 %*% (diag(1/Z.errV[r,]) %*% (Z[r,]) + iSig %*% t(X[r,] %*% bet))
-      Y[r,] <- MCMCpack::mvrnorm(n=1,mu=v,Sigma=s2)
+      Y[r,] <- MASS::mvrnorm(n=1,mu=v,Sigma=s2)
     }
     ## beta update
     iXi <- iSig %x% XtX   + diag(viB)
@@ -73,7 +73,7 @@ mvregerrGS <- function(Z,
     Sigma <- MCMCpack::riwish(nu + n, Psi + V) #
     ## predictions
     if(!is.null(XP)){
-      ans$YP[[i]] <- t(apply(XP %*% bet,1,function(x) mvrnorm(n=1,mu=x,Sigma=Sig)))
+      ans$YP[[i]] <- t(apply(XP %*% bet,1,function(x) MASS::mvrnorm(n=1,mu=x,Sigma=Sig)))
     }
     ## store
     if('Y' %in% record) ans$Y[[i]] <- Y

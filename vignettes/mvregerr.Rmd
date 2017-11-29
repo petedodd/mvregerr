@@ -1,0 +1,157 @@
+---
+title: "Overview of mvregerr"
+author: "P.J Dodd"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Preliminaries
+
+If `devtools` is installed, then the `mvregerr` package can be installed using
+
+```{r}
+devtools::install_github('petedodd/mvregerr',dependencies=TRUE)
+```
+
+First make sure that the package is loaded before using
+
+```{r}
+library(mvregerr)
+```
+
+# Simulated data example
+
+## Example 1
+
+TODO without covariates
+
+
+## Example 2
+
+For these examples, we will need these libraries
+
+```{r}
+library(ggplot2)
+library(data.table)
+```
+
+with covariates
+
+Generate some fake data
+
+```{r}
+N <- 2e2   #number of data rows 
+K <- 10    #number of outcomes per row
+P <- 3     # number of covariates
+XX <- matrix(sample(1:2,N*P,replace=TRUE)-1,nrow=N,ncol=P)  #covariates
+XX[,1] <- 1                             #intercept terms
+BB <- matrix(nrow=P,ncol=K)             #TODO sort out this to have some actual pattern!!
+for(k in 1:P) BB[k,] <- 1/k               #some covariates more influential than others
+BB[1,] <- 1*(1:K) * (K - (1:K))
+YY <- rnorm(n=N*K,mean=c(XX %*% BB),sd=.1)        #
+YY <- matrix(YY,nrow=N,ncol=K)                      #back to matrix
+eps <- .5         #measurement errors
+EPS <- matrix(eps^2,nrow=N,ncol=K)      #errors
+ZZ <- YY + matrix(rnorm(N*K,sd=eps),nrow=N,ncol=K)
+## fake data done
+```
+
+```{r}
+## check
+ydf <- YY
+colnames(ydf) <- letters[1:K]
+ydf <- as.data.frame(ydf)
+ydf$id <- 1:nrow(ydf)
+ydf <- as.data.table(ydf)
+ydf <- melt(ydf,id='id')
+
+(plt <- ggplot(data=ydf[id %in%1:10,],aes(x=variable,y=value)) + geom_point())
+## (plt <- ggplot(data=ydf,aes(x=variable,y=value)) + stat_summary(fun.data="mean_cl_boot"))
+
+## MLE/MAP attempt for B
+xi <- t(XX) %*% XX
+## xi <- xi %x% diag(K)
+xi <- diag(K) %x% xi                    #TODO THIS WAS WRONG!!
+yy <- t(XX) %*% YY  %*% diag(K)
+vy <- c(yy)
+bmap <- solve(xi,vy)
+bmap <- matrix(bmap,nrow=P,ncol=K)
+ypred <- XX %*% bmap
+colnames(ypred) <- letters[1:ncol(ypred)]
+ypdf <- as.data.table(ypred)
+ypdf$id <- 1:N
+ypdf <- melt(ypdf,id='id')
+plt + geom_point(data=ypdf[id %in%1:10,],col=3) + facet_wrap(~id)
+```
+
+## ## compare MLE and truth
+## yb1 <- copy(ydf)
+## yb2 <- copy(ypdf)
+## yb1[,true:=value]
+## yb2[,MLE:=value]
+## ybx <- merge(yb1[,.(id,variable,true)],yb2[,.(id,variable,MLE)],by=c('id','variable'))
+
+## ggplot(data=ybx,aes(x=true,y=MLE,col=variable)) +
+##   geom_point() +
+##   geom_abline(intercept = 0,slope=1) +
+##   coord_fixed()
+
+```{r}
+test0 <- mvregerrGS(ZZ,EPS,XX, nchain = 4*50,init=list(Psi=diag(K),nu=5),
+                  every = 20,record = c('Y','beta'))
+
+## look at beta
+
+plot(x=(c(BB)),y=c(test0$beta[[1]]))
+for(i in 2:50) points(x=(c(BB)),y=c(test0$beta[[i]]))
+abline(a=0,b=1,lty=2,col=2)
+
+plot(x=sqrt(c(BB)),y=c(test0$beta[[1]]))
+for(i in 2:50) points(x=sqrt(c(BB)),y=c(test0$beta[[i]]))
+curve(x^2,from = 0,to=sqrt(max(BB)),col=2,lty=2,add=TRUE)
+```
+
+## getYinCnN <- function(X,n) do.call('rbind',lapply(X=X,FUN=function(x)x[n,]))
+
+TODO plot chains
+```{r}
+y0 <- do.call('rbind',test0$Y)
+colnames(y0) <- letters[1:ncol(y0)]
+y0df <- as.data.frame(y0)
+y0df$id <- 1:nrow(test0$Y[[1]])
+y0df$rep <- rep(1:length(test0$Y),each=nrow(test0$Y[[1]]))
+y0df <- as.data.table(y0df)
+y0df <- melt(y0df,id=c('id','rep'))
+
+
+ggplot(data=ydf[id%in%1:12,],aes(x=variable,y=value)) + 
+  facet_wrap(~id) + 
+  geom_point(data=ypdf[id%in%1:12,],col=3,shape=2) +
+  geom_violin(data=y0df[id%in%1:12 & rep>20,],col=2)  +
+  geom_point(size=2) 
+
+## ## TODO
+## ## as predictions!
+## test1 <- getGibbs(ZZ,EPS,XX, nchain = 4*50,init=list(Psi=diag(K),nu=5),every = 20,XP=XX)
+
+## y1 <- do.call('rbind',test1$YP)
+## colnames(y1) <- letters[1:ncol(y1)]
+## y1df <- as.data.frame(y1)
+## y1df$id <- 1:nrow(test1$Y[[1]])
+## y1df$rep <- rep(1:length(test1$Y),each=nrow(test1$YP[[1]]))
+## y1df <- as.data.table(y1df)
+## y1df <- melt(y1df,id=c('id','rep'))
+
+
+## ggplot(data=ydf[id%in%1:12,],aes(x=variable,y=value)) + 
+##   facet_wrap(~id) + 
+##   geom_violin(data=y1df[id%in%1:12 & rep>20,],col=2)  +
+##   geom_point(size=2) 
+
+```
