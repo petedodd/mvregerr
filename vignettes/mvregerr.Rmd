@@ -11,6 +11,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+TODO comment clash
+make sure README includes build vignettes false and explain how to generate
+
 # Preliminaries
 
 If `devtools` is installed, then the `mvregerr` package can be installed using
@@ -24,6 +27,8 @@ First make sure that the package is loaded before using
 ```{r}
 library(mvregerr)
 ```
+
+
 
 # Simulated data example
 
@@ -88,7 +93,7 @@ ypdf <- as.data.table(ypred)
 ypdf$id <- 1:N
 ypdf <- melt(ypdf,id='id')
 plt + geom_point(data=ypdf[id %in%1:10,],col=3) + facet_wrap(~id)
-```
+
 
 ## ## compare MLE and truth
 ## yb1 <- copy(ydf)
@@ -101,9 +106,11 @@ plt + geom_point(data=ypdf[id %in%1:10,],col=3) + facet_wrap(~id)
 ##   geom_point() +
 ##   geom_abline(intercept = 0,slope=1) +
 ##   coord_fixed()
+```
+
 
 ```{r}
-test0 <- mvregerrGS(ZZ,EPS,XX, nchain = 4*50,init=list(Psi=diag(K),nu=5),
+test0 <- mvregerrGS(ZZ,EPS,XX, nchain = 50,init=list(Psi=diag(K),nu=5),
                   every = 20,record = c('Y','beta'))
 
 ## look at beta
@@ -117,7 +124,7 @@ for(i in 2:50) points(x=sqrt(c(BB)),y=c(test0$beta[[i]]))
 curve(x^2,from = 0,to=sqrt(max(BB)),col=2,lty=2,add=TRUE)
 ```
 
-## getYinCnN <- function(X,n) do.call('rbind',lapply(X=X,FUN=function(x)x[n,]))
+
 
 TODO plot chains
 ```{r}
