@@ -6,14 +6,7 @@ Description: This package uses Gibbs sampling for performing linear regression w
 Depends: R (>= 3.0.1)
 License: This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.
 LazyData: true
-Imports: data.tree,
-    data.table,
-    ggplot2,
-    scales,
-    reshape2,
-    MASS,
-    stringr,
-    MCMCpack
+Imports: MCMCpack
 Suggests: knitr,
     rmarkdown,
     coda,
