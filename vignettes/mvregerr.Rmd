@@ -5,6 +5,8 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
+fig_width: 6 
+fig_height: 4 
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -19,7 +21,7 @@ graph sizes
 
 If `devtools` is installed, then the `mvregerr` package can be installed using
 
-```{r}
+```{r,eval=FALSE}
 devtools::install_github('petedodd/mvregerr',dependencies=TRUE)
 ```
 
@@ -163,3 +165,39 @@ ggplot(data=ydf[id%in%1:12,],aes(x=variable,y=value)) +
 ##   geom_point(size=2) 
 
 ```
+
+# Technical details
+
+Note some of the math
+
+TODO check and tidy
+
+## y update
+
+$$z_i\sim N(y_i,\epsilon_i^2)$$
+$$y_i \sim N(X_i\beta,\sigma^2)$$
+
+From completing square:
+
+$$y_i|X_i,z_i,\beta,\sigma^2 \sim N(v_i,s_i^2)$$
+$$s_i^{-2} = \epsilon_i^{-2}+\sigma^{-2}$$
+$$v_i = s_i^2(\epsilon_i^{-2}z_i+\sigma^{-2}X_i\beta)$$
+
+## $\beta$ update
+
+Prior
+
+$$\beta_{ij}\sim N(0,B_{ij}^2)$$
+
+Use $\tilde{\beta}$ for a vector of elements for the matrix $\beta$ etc.
+
+$$\tilde{\beta}\sim N(\mu,\xi^2)$$
+$$\xi^{-2} = \widetilde{B}^{-2} + \sigma^{-2}\otimes (X^TX) $$
+$$\mu = \xi^2 (X^TY\sigma^{-2})$$
+
+
+## $\sigma^2$ update
+
+
+$$\sigma^2 ~ IW(\nu+n,\Psi + V)$$
+$$V = (Y-X\beta)^T(Y-X\beta)$$
